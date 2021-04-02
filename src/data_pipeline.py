@@ -6,11 +6,20 @@ def get_data(tablename):
     '''
     input desired table name as a string
     returns table as pandas data frame
+
+    NB: After downloading the complete dataset from Kaggle
+    (see README), unzip file in the data directory by creating
+    a subdirectory labeled 'ga_archive'
     '''
     df = pd.read_csv(f'../data/ga_archive/{tablename}', sep = '|')
     return df
 
 def combine_dfs(df1, df2):
+    '''
+    input two dataframes, df1 and df2.
+    df2 will create a target column for df1.
+    returns new df1 with added target column from df2.
+    '''
     new_lst = list(df2['registration_number'])
     mask = df1['registration_number'].isin(new_lst)
     df1['new_registration'] = mask
@@ -18,6 +27,12 @@ def combine_dfs(df1, df2):
     return df1
 
 def clean_data(df1):
+    '''
+    input df1 with added target column,
+    i.e. the df returned from combine_dfs()
+    returns clean df1 ready to be split into training
+    and holdout sets using split_data()
+    '''
     df1 = df1.drop([
     'land_district',
     'land_lot',
@@ -429,6 +444,12 @@ def clean_data(df1):
     return df1
 
 def split_data(df, train_ratio):
+    '''
+    input clean df and desired ratio of training / holdout split.
+    train_ratio of .8 will randomly assign 80 percent of the 
+    input df to training and the remainder to the holdout (test) df.
+    returns train, test dfs ready for modeling.
+    '''
     df = df.copy()
     msk = np.random.rand(len(df)) < train_ratio
     train = df[msk]
@@ -438,23 +459,41 @@ def split_data(df, train_ratio):
 
 
 if __name__=='__main__':
-    all = get_data('tbl_prod_GABU202012_all.csv')
+    '''
+    obtain the relevant .csv files from the 
+    /data/ga_archive/ directory
+    '''
+    
+    # all = get_data('tbl_prod_GABU202012_all.csv')
 
-    oct_new = get_data('tbl_prod_GABU202010_new_records.csv')
-    nov_new = get_data('tbl_prod_GABU202011_new_records.csv')
-    dec_new = get_data('tbl_prod_GABU202012_new_records.csv')
+    # oct_new = get_data('tbl_prod_GABU202010_new_records.csv')
+    # nov_new = get_data('tbl_prod_GABU202011_new_records.csv')
+    # dec_new = get_data('tbl_prod_GABU202012_new_records.csv')
 
-    new = pd.concat([oct_new, nov_new, dec_new], axis=0)
+    # new = pd.concat([oct_new, nov_new, dec_new], axis=0)
 
-    # sample data for GitHub
-    all_sample = all.sample(10000)
-    new_sample = new.sample(1000)
+    '''
+    sample data for GitHub. these files have already been uploaded
+    to /data/ but you can create new samples once you've obtained
+    the complete dataset
+    '''
+    # all_sample = all.sample(10000)
+    # new_sample = new.sample(1000)
 
-    all_sample.to_csv('../data/all_sample.csv', index = False)
-    print('all_sample df saved to ../data/all_sample.csv')
-    new_sample.to_csv('../data/new_sample.csv',index = False)
-    print('new_sample df saved to ../data/new_sample.csv')
+    # all_sample.to_csv('../data/all_sample.csv', index = False)
+    # print('all_sample df saved to ../data/all_sample.csv')
+    # new_sample.to_csv('../data/new_sample.csv',index = False)
+    # print('new_sample df saved to ../data/new_sample.csv')
 
+    '''
+    assuming you're using the complete dataset, the following code
+    will combine your all and new dfs before splitting and saving 
+    the split train and test sets to /data for use in
+    log_reg_model.py scripts.
+
+    if not using the complete dataset, df names all, new must be
+    swapped for sample dfs all_sample, new_sample
+    '''
     # tot = combine_dfs(all,new)
 
     # train, test = split_data(tot, 0.8)
