@@ -9,13 +9,13 @@ This project features the use of python scripts for data retrieval and modeling,
 - src for scripts
 
 ## Motivation
-The 2020 United States General Election highlighted some of the changing features of the US electorate that may remain with us for elections to come. In particular, Georgia voters complicated assumptions about voters in southern states with their unexpected support for Democrats. Given the [historic turnout](http://www.electproject.org/) in the election nationally and at the state level in Georgia, we might conclude that the unexpected results in Georgia owed in part to the behavior of newly registered voters. Accordingly, a complete account of election results in Georgia would involve developing our understanding of the characteristics of newly registered voters. Through inferential logistic regression, I will evaluate Georgia Voter Registration Records to isolate the features most associated with newly registered voters. 
+The 2020 United States General Election highlighted some of the changing features of the US electorate that may remain with us for elections to come. In particular, Georgia voters complicated assumptions about voters in southern states with their unexpected support for Democrats. Given the [historic turnout](http://www.electproject.org/) in the election nationally and at the state level in Georgia, we might conclude that the unexpected results in Georgia owed in part to the behavior of newly registered voters. Accordingly, a complete account of election results in Georgia would involve developing our understanding of the characteristics of newly registered voters. Through inferential logistic regression, I will evaluate Georgia Voter Registration Records to isolate the features most associated with newly registered voters.
+
+In the event that such features cannot be isolated, I will explain how the analysis identified this failure.
 
 ![](./images/nat_turnout.png)
 
 ![](./images/ga_turnout.png)
-
-In the event that such features cannot be isolated, I will explain how the analysis identified this failure.
 
 ## Georgia Voter Registration Dataset
 The American Voter Project has made Voter Registration Records from the Georgia Secretary of State spanning the period from October to December 2020 available to the public through [Kaggle](https://www.kaggle.com/gabrielaltay/georgia-voter-list-202011). The records consist primarily of .csv and .geojson files, of which the .csv files tabulate both the total electorate during the period and subsets of tables for new voters, dropped voters, voters with changed voting status and tables of active and inactive voters.
@@ -52,11 +52,11 @@ With the data combined into a single file containing all available independent a
 | 17 | city_distd_value           | 0              | float64 |
 | 18 | party_last_voted           | 1666           | object  |
 
-Of the former, "county_districta_name", "status_reason" and "city_school_district_name" contained predominantly null values, even among the subset of new voters and were dropped accordingly. Of the latter, geographic divisions accounted for the majority of the 46 features in the combined total voter registration list. For example, "county_code", "residence_city", "residence_zipcode" and roughly 28 other features all approximate, to varying levels of granularity, the geographic distribution of voters and were consolidated to more manageable levels.
+Of the former, "county_districta_name", "status_reason" and "city_school_district_name" contained predominantly null values, even among the subset of new voters and were dropped accordingly. Of the latter, geographic divisions accounted for the majority of the 46 features in the combined total voter registration list. For example, "county_code", "residence_city", "residence_zipcode" and roughly 28 other features all approximate, to varying levels of granularity, the geographic distribution of voters and were consolidated to more manageable categories.
 
-The majority of geographic distinctions were simply dropped due to a combination of redundancy and the difficulty of featurizing these categories for use in the model. With the exception of "birthyear" (which was subsequently refactored as the numerical value, "age"), every feature in the combined dataset represented a category. In order to avoid the nighmare of featurizing "residence_zipcode" into more than 3000 one-hot encoded categories, this column was dropped.
+The majority of geographic distinctions were simply dropped due to a combination of redundancy and the difficulty of featurizing these categories for use in the model. With the exception of "birthyear" (which was subsequently refactored as the continuous value, "age"), every feature in the combined dataset represented a category. In order to avoid the nighmare of featurizing "residence_zipcode" into more than 3000 one-hot encoded categories, this column among other similar categories, was dropped.
 
-Yet, with other geographic categories, such as Georgia's 159 counties or 14 congressional districts, their potential predictive value outweighed the difficulties of representing them categorically. Representing 15 congressional districts (some voters could not be classified and were assigned to district 9999) as 15 one-hot encoded categories posed little difficulty. The same could be said for Georgia counties, but I decided to spare the model from parsing 159 counties and instead broke counties down into three socio-economic subsets: urban counties, rural counties and counties with a majority military population. With the addition of one-hot encoded gender and racial categories, the final data set consisted of more than 7 million records represented by 30 features.
+Yet, with other geographic categories, such as Georgia's 159 counties or 14 congressional districts, their potential predictive value outweighed the difficulties of representing them categorically. Representing 15 congressional districts (some voters could not be classified and were assigned to district 9999) as 15 one-hot encoded categories posed little difficulty. The same could be said for Georgia counties, but I decided to spare the model from parsing 159 counties and instead broke counties down into [three socio-economic subsets](https://dch.georgia.gov/document/document/georgia-rural-counties-map/download): urban counties, rural counties and counties with a majority military population. With the addition of one-hot encoded gender and racial categories, the final data set consisted of more than 7 million records represented by 30 features.
 
 | #   | Column       | Non-Null Count | Dtype |
 |-----|--------------|----------------|-------|
@@ -84,7 +84,7 @@ Inferential analysis sacrifices predictive power in order to confirm its asserti
 
 1. a binary dependent variable: "new_registration" = 1 for new, 0 for existing
 2. independent observation: being what they are, voter registration records may be assumed independent in the absence of massive voter fraud
-3. little or no multicollinearity among independent variable: the Pearson correlation matrix below suggests no significant collinearity among our features
+3. little or no multicollinearity among independent variables: the Pearson correlation matrix below suggests no significant collinearity among our features
 
 ![](./images/corr_heatmap.png)
 
@@ -97,7 +97,7 @@ Inferential analysis sacrifices predictive power in order to confirm its asserti
 By confirming the assumptions of logistic regression, the coefficient values calculated by the model can confidently be attributed to the corresponding feature such that a change in the log odds of any feature can confidently be attributed to a log odds change in the target value.
 
 ## Logistic Regression Model of New Voter Registration
-Despite meeting the assumptions of logistic regression, the researcher always runs the risk that there is simply no connection between a model's features and targets. To verify whether the features were significant in predicting the target, I calculated the p-values for the entirety of the feature set and found that only two features carried any predictive value for the target.
+Despite meeting the assumptions of logistic regression, the researcher always runs the risk that there is simply no connection between a model's features and targets. To verify whether the features were significant in predicting the target, I calculated the p-values for the entirety of the feature set and found that only two features carried any significance for the target.
 
 | Logit Regression Results |
 
@@ -129,8 +129,8 @@ Predictably, the only two features that carried any significance when determinin
 ## Conclusions and Next Steps
 This project began with the intention to isolate the features of newly registered voters through an inferential logistic regression analysis that would sacrifice predictive capacity in order to demonstrate a strong link establishing the feature set as those traits most solidly assocated with new voters.
 
-Although the assumptions of logistic regression were demonstrated, this is no guaranty that the feature set is highly correlated with the target category. Indeed, the only features that could be significantly associated with new voter status were the trivially predictable attributes of being active voter and age.
+Although the assumptions of logistic regression were demonstrated, this is no guaranty that the feature set is highly correlated with the target category. Indeed, the only features that could be significantly associated with new voter status were the trivially predictable attributes of being an active voter and age.
 
-While disappointing from the perspective of identifying unexpected attributes of new voters, the analysis indicates that there is no apparent demographic or geograpthic categorization within the data that strongly correlates new voter registration over another.
+While disappointing from the perspective of discovering unexpected attributes of new voters, the analysis indicates that there is no apparent demographic or geographic categorization within the data that strongly correlates new voter registration with one group over another.
 
-Accordingly, a proper identification on new voter characteristics would either need an expanded dataset that includes additional demographic features beloning to the entire voting age population rather or significantly more feature engineering capable of deriving traits otherwise implicit in the current dataset.
+Accordingly, a proper identification of new voter characteristics would either need an expanded dataset that includes additional demographic features beloning to the entire voting age population or significantly more feature engineering capable of deriving correlated traits otherwise implicit in the current dataset.
